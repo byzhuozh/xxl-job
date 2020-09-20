@@ -24,22 +24,23 @@ public class XxlJobScheduler  {
         // init i18n
         initI18n();
 
-        // admin registry monitor run
+        // admin registry monitor run   job注册地址更新失效处理
         JobRegistryMonitorHelper.getInstance().start();
 
-        // admin fail-monitor run
+        // admin fail-monitor run   根据失败日志 -- 判断是否重新执行任务
         JobFailMonitorHelper.getInstance().start();
 
-        // admin lose-monitor run
+        // admin lose-monitor run  任务结果丢失处理：调度记录停留在 "运行中" 状态超过10min，且对应执行器心跳注册失败不在线，则将本地调度主动标记失败；
         JobLosedMonitorHelper.getInstance().start();
 
-        // admin trigger pool start
+        // admin trigger pool start   初始化 快线程池 和 慢线程池
         JobTriggerPoolHelper.toStart();
 
-        // admin log report start
+        // admin log report start   统计近3天的每天任务执行的失败、成功统计
         JobLogReportHelper.getInstance().start();
 
         // start-schedule
+        // 启动定时任务
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");

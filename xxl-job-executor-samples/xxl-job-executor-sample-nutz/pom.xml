@@ -14,10 +14,10 @@
     <dependencies>
         <!-- nutz -->
         <dependency>
-			<groupId>org.nutz</groupId>
-			<artifactId>nutz</artifactId>
-			<version>1.r.62</version>
-		</dependency>
+            <groupId>org.nutz</groupId>
+            <artifactId>nutz</artifactId>
+            <version>1.r.62</version>
+        </dependency>
 
         <!-- slf4j -->
         <dependency>

@@ -90,7 +90,7 @@ public class XxlJobServiceImpl implements XxlJobService {
 			jobInfo.setGlueSource(jobInfo.getGlueSource().replaceAll("\r", ""));
 		}
 
-		// ChildJobId valid
+		// ChildJobId valid  检验子handler 是否存在
         if (jobInfo.getChildJobId()!=null && jobInfo.getChildJobId().trim().length()>0) {
 			String[] childJobIds = jobInfo.getChildJobId().split(",");
 			for (String childJobIdItem: childJobIds) {
@@ -261,6 +261,7 @@ public class XxlJobServiceImpl implements XxlJobService {
 			return new ReturnT<String>(ReturnT.FAIL_CODE, I18nUtil.getString("jobinfo_field_cron_unvalid")+" | "+ e.getMessage());
 		}
 
+		//更新任务运行状态
 		xxlJobInfo.setTriggerStatus(1);
 		xxlJobInfo.setTriggerLastTime(0);
 		xxlJobInfo.setTriggerNextTime(nextTriggerTime);

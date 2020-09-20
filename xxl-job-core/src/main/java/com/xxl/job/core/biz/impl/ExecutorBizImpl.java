@@ -66,7 +66,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
                 jobHandler = null;
             }
 
-            // valid handler
+            // valid handler   校验任务是否存在
             if (jobHandler == null) {
                 jobHandler = newJobHandler;
                 if (jobHandler == null) {
@@ -119,6 +119,7 @@ public class ExecutorBizImpl implements ExecutorBiz {
         }
 
         // executor block strategy
+        // 根据策略，选择是否执行该任务
         if (jobThread != null) {
             ExecutorBlockStrategyEnum blockStrategy = ExecutorBlockStrategyEnum.match(triggerParam.getExecutorBlockStrategy(), null);
             if (ExecutorBlockStrategyEnum.DISCARD_LATER == blockStrategy) {
@@ -139,11 +140,12 @@ public class ExecutorBizImpl implements ExecutorBiz {
         }
 
         // replace thread (new or exists invalid)
+        // 注册 job 线程
         if (jobThread == null) {
             jobThread = XxlJobExecutor.registJobThread(triggerParam.getJobId(), jobHandler, removeOldReason);
         }
 
-        // push data to queue
+        // push data to queue   将请求[要执行的handler 及参数]数据推到队列中
         ReturnT<String> pushResult = jobThread.pushTriggerQueue(triggerParam);
         return pushResult;
     }

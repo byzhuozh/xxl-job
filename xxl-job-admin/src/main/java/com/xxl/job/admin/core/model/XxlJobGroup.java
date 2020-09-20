@@ -6,6 +6,8 @@ import java.util.List;
 
 /**
  * Created by xuxueli on 16/9/30.
+ * 执行器
+ * 任务组（按应用维度划分）
  */
 public class XxlJobGroup {
 

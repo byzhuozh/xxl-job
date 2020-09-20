@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Created by xuxueli on 2016/3/2 21:14.
  */
-public class XxlJobExecutor  {
+public class XxlJobExecutor {
     private static final Logger logger = LoggerFactory.getLogger(XxlJobExecutor.class);
 
     // ---------------------- param ----------------------
@@ -38,24 +38,31 @@ public class XxlJobExecutor  {
     public void setAdminAddresses(String adminAddresses) {
         this.adminAddresses = adminAddresses;
     }
+
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
     }
+
     public void setAppname(String appname) {
         this.appname = appname;
     }
+
     public void setAddress(String address) {
         this.address = address;
     }
+
     public void setIp(String ip) {
         this.ip = ip;
     }
+
     public void setPort(int port) {
         this.port = port;
     }
+
     public void setLogPath(String logPath) {
         this.logPath = logPath;
     }
+
     public void setLogRetentionDays(int logRetentionDays) {
         this.logRetentionDays = logRetentionDays;
     }
@@ -65,28 +72,33 @@ public class XxlJobExecutor  {
     public void start() throws Exception {
 
         // init logpath
+        // 初始化本地日志文件
         XxlJobFileAppender.initLogPath(logPath);
 
         // init invoker, admin-client
+        // 初始化 xxl-admin 管理台(调度中心)地址
         initAdminBizList(adminAddresses, accessToken);
 
-
         // init JobLogFileCleanThread
+        // 初始化日志文件清除线程 --> 清除 N 天前的日志
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
         // init TriggerCallbackThread
+        // 初始化回调线程
         TriggerCallbackThread.getInstance().start();
 
         // init executor-server
+        // 初始化嵌入服务（监听 xxl-job 管理台发起的服务调用）
         initEmbedServer(address, ip, port, appname, accessToken);
     }
-    public void destroy(){
+
+    public void destroy() {
         // destory executor-server
         stopEmbedServer();
 
         // destory jobThreadRepository
         if (jobThreadRepository.size() > 0) {
-            for (Map.Entry<Integer, JobThread> item: jobThreadRepository.entrySet()) {
+            for (Map.Entry<Integer, JobThread> item : jobThreadRepository.entrySet()) {
                 JobThread oldJobThread = removeJobThread(item.getKey(), "web container destroy and kill the job.");
                 // wait for job thread push result to callback queue
                 if (oldJobThread != null) {
@@ -113,10 +125,11 @@ public class XxlJobExecutor  {
 
     // ---------------------- admin-client (rpc invoker) ----------------------
     private static List<AdminBiz> adminBizList;
+
     private void initAdminBizList(String adminAddresses, String accessToken) throws Exception {
-        if (adminAddresses!=null && adminAddresses.trim().length()>0) {
-            for (String address: adminAddresses.trim().split(",")) {
-                if (address!=null && address.trim().length()>0) {
+        if (adminAddresses != null && adminAddresses.trim().length() > 0) {
+            for (String address : adminAddresses.trim().split(",")) {
+                if (address != null && address.trim().length() > 0) {
 
                     AdminBiz adminBiz = new AdminBizClient(address.trim(), accessToken);
 
@@ -128,7 +141,8 @@ public class XxlJobExecutor  {
             }
         }
     }
-    public static List<AdminBiz> getAdminBizList(){
+
+    public static List<AdminBiz> getAdminBizList() {
         return adminBizList;
     }
 
@@ -138,11 +152,12 @@ public class XxlJobExecutor  {
     private void initEmbedServer(String address, String ip, int port, String appname, String accessToken) throws Exception {
 
         // fill ip port
-        port = port>0?port: NetUtil.findAvailablePort(9999);
-        ip = (ip!=null&&ip.trim().length()>0)?ip: IpUtil.getIp();
+        // 默认端口 9999
+        port = port > 0 ? port : NetUtil.findAvailablePort(9999);
+        ip = (ip != null && ip.trim().length() > 0) ? ip : IpUtil.getIp();
 
         // generate address
-        if (address==null || address.trim().length()==0) {
+        if (address == null || address.trim().length() == 0) {
             String ip_port_address = IpUtil.getIpPort(ip, port);   // registry-address：default use address to registry , otherwise use ip:port if address is null
             address = "http://{ip_port}/".replace("{ip_port}", ip_port_address);
         }
@@ -163,24 +178,28 @@ public class XxlJobExecutor  {
 
 
     // ---------------------- job handler repository ----------------------
+    // job-handle 缓存
     private static ConcurrentMap<String, IJobHandler> jobHandlerRepository = new ConcurrentHashMap<String, IJobHandler>();
-    public static IJobHandler registJobHandler(String name, IJobHandler jobHandler){
+
+    public static IJobHandler registJobHandler(String name, IJobHandler jobHandler) {
         logger.info(">>>>>>>>>>> xxl-job register jobhandler success, name:{}, jobHandler:{}", name, jobHandler);
         return jobHandlerRepository.put(name, jobHandler);
     }
-    public static IJobHandler loadJobHandler(String name){
+
+    public static IJobHandler loadJobHandler(String name) {
         return jobHandlerRepository.get(name);
     }
 
 
     // ---------------------- job thread repository ----------------------
     private static ConcurrentMap<Integer, JobThread> jobThreadRepository = new ConcurrentHashMap<Integer, JobThread>();
-    public static JobThread registJobThread(int jobId, IJobHandler handler, String removeOldReason){
+
+    public static JobThread registJobThread(int jobId, IJobHandler handler, String removeOldReason) {
         JobThread newJobThread = new JobThread(jobId, handler);
         newJobThread.start();
         logger.info(">>>>>>>>>>> xxl-job regist JobThread success, jobId:{}, handler:{}", new Object[]{jobId, handler});
 
-        JobThread oldJobThread = jobThreadRepository.put(jobId, newJobThread);	// putIfAbsent | oh my god, map's put method return the old value!!!
+        JobThread oldJobThread = jobThreadRepository.put(jobId, newJobThread);    // putIfAbsent | oh my god, map's put method return the old value!!!
         if (oldJobThread != null) {
             oldJobThread.toStop(removeOldReason);
             oldJobThread.interrupt();
@@ -188,7 +207,8 @@ public class XxlJobExecutor  {
 
         return newJobThread;
     }
-    public static JobThread removeJobThread(int jobId, String removeOldReason){
+
+    public static JobThread removeJobThread(int jobId, String removeOldReason) {
         JobThread oldJobThread = jobThreadRepository.remove(jobId);
         if (oldJobThread != null) {
             oldJobThread.toStop(removeOldReason);
@@ -198,7 +218,8 @@ public class XxlJobExecutor  {
         }
         return null;
     }
-    public static JobThread loadJobThread(int jobId){
+
+    public static JobThread loadJobThread(int jobId) {
         JobThread jobThread = jobThreadRepository.get(jobId);
         return jobThread;
     }

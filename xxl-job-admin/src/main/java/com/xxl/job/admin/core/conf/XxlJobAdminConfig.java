@@ -37,6 +37,8 @@ public class XxlJobAdminConfig implements InitializingBean, DisposableBean {
         adminConfig = this;
 
         xxlJobScheduler = new XxlJobScheduler();
+
+        //JobScheduleHelper调度器，自旋，在xxl_job_info表里取将要执行的任务，更新下次执行时间的，调用JobTriggerPoolHelper类，来给执行器发送调度任务的
         xxlJobScheduler.init();
     }
 

@@ -134,6 +134,7 @@ public class JobThread extends Thread{
 							FutureTask<ReturnT<String>> futureTask = new FutureTask<ReturnT<String>>(new Callable<ReturnT<String>>() {
 								@Override
 								public ReturnT<String> call() throws Exception {
+									// handler 统一包装成了 MethodJobHandler
 									return handler.execute(triggerParamTmp.getExecutorParams());
 								}
 							});
@@ -189,6 +190,7 @@ public class JobThread extends Thread{
                     // callback handler info
                     if (!toStop) {
                         // commonm
+						// 将执行结果发放到回调队列中
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTime(), executeResult));
                     } else {
                         // is killed

@@ -22,15 +22,15 @@ public class HttpJobHandler extends IJobHandler {
     public ReturnT<String> execute(String param) throws Exception {
 
         // param parse
-        if (param==null || param.trim().length()==0) {
-            XxlJobLogger.log("param["+ param +"] invalid.");
+        if (param == null || param.trim().length() == 0) {
+            XxlJobLogger.log("param[" + param + "] invalid.");
             return ReturnT.FAIL;
         }
         String[] httpParams = param.split("\n");
         String url = null;
         String method = null;
         String data = null;
-        for (String httpParam: httpParams) {
+        for (String httpParam : httpParams) {
             if (httpParam.startsWith("url:")) {
                 url = httpParam.substring(httpParam.indexOf("url:") + 4).trim();
             }
@@ -43,17 +43,17 @@ public class HttpJobHandler extends IJobHandler {
         }
 
         // param valid
-        if (url==null || url.trim().length()==0) {
-            XxlJobLogger.log("url["+ url +"] invalid.");
+        if (url == null || url.trim().length() == 0) {
+            XxlJobLogger.log("url[" + url + "] invalid.");
             return ReturnT.FAIL;
         }
-        if (method==null || !Arrays.asList("GET", "POST").contains(method)) {
-            XxlJobLogger.log("method["+ method +"] invalid.");
+        if (method == null || !Arrays.asList("GET", "POST").contains(method)) {
+            XxlJobLogger.log("method[" + method + "] invalid.");
             return ReturnT.FAIL;
         }
         boolean isPostMethod = method.equals("POST");
 
-                // request
+        // request
         HttpURLConnection connection = null;
         BufferedReader bufferedReader = null;
         try {
@@ -76,7 +76,7 @@ public class HttpJobHandler extends IJobHandler {
             connection.connect();
 
             // data
-            if (isPostMethod && data!=null && data.trim().length()>0) {
+            if (isPostMethod && data != null && data.trim().length() > 0) {
                 DataOutputStream dataOutputStream = new DataOutputStream(connection.getOutputStream());
                 dataOutputStream.write(data.getBytes("UTF-8"));
                 dataOutputStream.flush();

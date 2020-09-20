@@ -14,6 +14,8 @@ public @interface XxlJob {
 
     /**
      * jobhandler name
+     *
+     * job 名称
      */
     String value();
 

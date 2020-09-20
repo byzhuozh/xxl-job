@@ -45,6 +45,7 @@ public class ExecutorRegistryThread {
                         RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appname, address);
                         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
                             try {
+                                //向xxl-管理中心注册
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
                                 if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
                                     registryResult = ReturnT.SUCCESS;
@@ -77,6 +78,7 @@ public class ExecutorRegistryThread {
                 }
 
                 // registry remove
+                // 走动这边，则进行 job注册信息移除
                 try {
                     RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appname, address);
                     for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {

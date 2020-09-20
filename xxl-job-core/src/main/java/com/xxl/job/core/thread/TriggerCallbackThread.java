@@ -54,12 +54,10 @@ public class TriggerCallbackThread {
             return;
         }
 
-        // callback
+        // callback  回调触发线程
         triggerCallbackThread = new Thread(new Runnable() {
-
             @Override
             public void run() {
-
                 // normal callback
                 while(!toStop){
                     try {
@@ -72,6 +70,7 @@ public class TriggerCallbackThread {
                             callbackParamList.add(callback);
 
                             // callback, will retry if error
+                            // 回调处理
                             if (callbackParamList!=null && callbackParamList.size()>0) {
                                 doCallback(callbackParamList);
                             }
@@ -104,7 +103,7 @@ public class TriggerCallbackThread {
         triggerCallbackThread.start();
 
 
-        // retry
+        // retry  重试线程
         triggerRetryCallbackThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -165,15 +164,19 @@ public class TriggerCallbackThread {
         // callback, will retry if error
         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
             try {
+                //回调处理
                 ReturnT<String> callbackResult = adminBiz.callback(callbackParamList);
+                //任务执行成功，则写入到回日志中
                 if (callbackResult!=null && ReturnT.SUCCESS_CODE == callbackResult.getCode()) {
                     callbackLog(callbackParamList, "<br>----------- xxl-job job callback finish.");
                     callbackRet = true;
                     break;
                 } else {
+                    //任务执行失败，则写入到回调日志中
                     callbackLog(callbackParamList, "<br>----------- xxl-job job callback fail, callbackResult:" + callbackResult);
                 }
             } catch (Exception e) {
+                //任务异常，则写入到回调日志中
                 callbackLog(callbackParamList, "<br>----------- xxl-job job callback error, errorMsg:" + e.getMessage());
             }
         }

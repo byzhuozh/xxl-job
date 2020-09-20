@@ -35,6 +35,7 @@ public class EmbedServer {
 
     public void start(final String address, final int port, final String appname, final String accessToken) {
         executorBiz = new ExecutorBizImpl();
+
         thread = new Thread(new Runnable() {
 
             @Override
@@ -81,11 +82,12 @@ public class EmbedServer {
                             .childOption(ChannelOption.SO_KEEPALIVE, true);
 
                     // bind
+                    // 绑定端口，开启监听j
                     ChannelFuture future = bootstrap.bind(port).sync();
 
                     logger.info(">>>>>>>>>>> xxl-job remoting server start success, nettype = {}, port = {}", EmbedServer.class, port);
 
-                    // start registry
+                    // start registry  开始注册
                     startRegistry(appname, address);
 
                     // wait util stop
@@ -163,6 +165,7 @@ public class EmbedServer {
                 @Override
                 public void run() {
                     // do invoke
+                    // 客户端执行
                     Object responseObj = process(httpMethod, uri, requestData, accessTokenReq);
 
                     // to json
@@ -197,8 +200,10 @@ public class EmbedServer {
                     IdleBeatParam idleBeatParam = GsonTool.fromJson(requestData, IdleBeatParam.class);
                     return executorBiz.idleBeat(idleBeatParam);
                 } else if ("/run".equals(uri)) {
+
                     TriggerParam triggerParam = GsonTool.fromJson(requestData, TriggerParam.class);
-                    return executorBiz.run(triggerParam);
+                    return executorBiz.run(triggerParam);  // executorBiz -> ExecutorBizImpl
+
                 } else if ("/kill".equals(uri)) {
                     KillParam killParam = GsonTool.fromJson(requestData, KillParam.class);
                     return executorBiz.kill(killParam);

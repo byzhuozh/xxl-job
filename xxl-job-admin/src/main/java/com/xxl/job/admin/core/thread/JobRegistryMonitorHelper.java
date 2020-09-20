@@ -30,17 +30,17 @@ public class JobRegistryMonitorHelper {
 			public void run() {
 				while (!toStop) {
 					try {
-						// auto registry group
+						// auto registry group   查询自动注册的执行器组
 						List<XxlJobGroup> groupList = XxlJobAdminConfig.getAdminConfig().getXxlJobGroupDao().findByAddressType(0);
 						if (groupList!=null && !groupList.isEmpty()) {
 
-							// remove dead address (admin/executor)
+							// remove dead address (admin/executor)   移除失效的节点
 							List<Integer> ids = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findDead(RegistryConfig.DEAD_TIMEOUT, new Date());
 							if (ids!=null && ids.size()>0) {
 								XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().removeDead(ids);
 							}
 
-							// fresh online address (admin/executor)
+							// fresh online address (admin/executor) 查询所有存活的节点
 							HashMap<String, List<String>> appAddressMap = new HashMap<String, List<String>>();
 							List<XxlJobRegistry> list = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findAll(RegistryConfig.DEAD_TIMEOUT, new Date());
 							if (list != null) {
@@ -60,7 +60,7 @@ public class JobRegistryMonitorHelper {
 								}
 							}
 
-							// fresh group address
+							// fresh group address   更新执行器组中的地址列表
 							for (XxlJobGroup group: groupList) {
 								List<String> registryList = appAddressMap.get(group.getAppname());
 								String addressListStr = null;

@@ -4,6 +4,8 @@ import java.util.Date;
 
 /**
  * Created by xuxueli on 16/9/30.
+ *
+ * job handler 注册信息
  */
 public class XxlJobRegistry {
 

@@ -131,13 +131,13 @@ public class JobInfoController {
 	
 	@RequestMapping("/trigger")
 	@ResponseBody
-	//@PermissionLimit(limit = false)
 	public ReturnT<String> triggerJob(int id, String executorParam, String addressList) {
 		// force cover job param
 		if (executorParam == null) {
 			executorParam = "";
 		}
 
+		//触发任务
 		JobTriggerPoolHelper.trigger(id, TriggerTypeEnum.MANUAL, -1, null, executorParam, addressList);
 		return ReturnT.SUCCESS;
 	}

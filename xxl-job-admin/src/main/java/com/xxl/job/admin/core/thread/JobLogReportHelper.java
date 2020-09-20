@@ -24,7 +24,6 @@ public class JobLogReportHelper {
         return instance;
     }
 
-
     private Thread logrThread;
     private volatile boolean toStop = false;
     public void start(){
@@ -40,6 +39,8 @@ public class JobLogReportHelper {
                 while (!toStop) {
 
                     // 1、log-report refresh: refresh log report in 3 days
+                    // 统计近3天的每天任务执行的失败、成功统计
+
                     try {
 
                         for (int i = 0; i < 3; i++) {
@@ -68,6 +69,7 @@ public class JobLogReportHelper {
                             xxlJobLogReport.setSucCount(0);
                             xxlJobLogReport.setFailCount(0);
 
+                            //统计一天内执行成功、执行失败、执行中的任务数量
                             Map<String, Object> triggerCountMap = XxlJobAdminConfig.getAdminConfig().getXxlJobLogDao().findLogReport(todayFrom, todayTo);
                             if (triggerCountMap!=null && triggerCountMap.size()>0) {
                                 int triggerDayCount = triggerCountMap.containsKey("triggerDayCount")?Integer.valueOf(String.valueOf(triggerCountMap.get("triggerDayCount"))):0;

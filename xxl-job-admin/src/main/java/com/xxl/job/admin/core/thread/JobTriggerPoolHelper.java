@@ -21,13 +21,14 @@ public class JobTriggerPoolHelper {
     // ---------------------- trigger pool ----------------------
 
     // fast/slow thread pool
+    // 快慢线程池
     private ThreadPoolExecutor fastTriggerPool = null;
     private ThreadPoolExecutor slowTriggerPool = null;
 
     public void start(){
         fastTriggerPool = new ThreadPoolExecutor(
                 10,
-                XxlJobAdminConfig.getAdminConfig().getTriggerPoolFastMax(),
+                XxlJobAdminConfig.getAdminConfig().getTriggerPoolFastMax(),  // 最小200
                 60L,
                 TimeUnit.SECONDS,
                 new LinkedBlockingQueue<Runnable>(1000),
@@ -63,22 +64,25 @@ public class JobTriggerPoolHelper {
 
     // job timeout count
     private volatile long minTim = System.currentTimeMillis()/60000;     // ms > min
+    // 慢任务缓存
     private volatile ConcurrentMap<Integer, AtomicInteger> jobTimeoutCountMap = new ConcurrentHashMap<>();
 
 
     /**
      * add trigger
      */
-    public void addTrigger(final int jobId,
-                           final TriggerTypeEnum triggerType,
-                           final int failRetryCount,
-                           final String executorShardingParam,
-                           final String executorParam,
-                           final String addressList) {
+    public void addTrigger(final int jobId,                      //任务ID
+                           final TriggerTypeEnum triggerType,    //触发类型
+                           final int failRetryCount,             //失败重试次数
+                           final String executorShardingParam,   //分片参数
+                           final String executorParam,           //执行参数
+                           final String addressList) {           //地址列表
 
-        // choose thread pool
+        // choose thread pool   默认丢到快速线程池中执行
         ThreadPoolExecutor triggerPool_ = fastTriggerPool;
         AtomicInteger jobTimeoutCount = jobTimeoutCountMap.get(jobId);
+
+        //如果当前的任务缓存超过了10个，则采用慢线程池处理
         if (jobTimeoutCount!=null && jobTimeoutCount.get() > 10) {      // job-timeout 10 times in 1 min
             triggerPool_ = slowTriggerPool;
         }
@@ -91,7 +95,7 @@ public class JobTriggerPoolHelper {
                 long start = System.currentTimeMillis();
 
                 try {
-                    // do trigger
+                    // do trigger  执行任务
                     XxlJobTrigger.trigger(jobId, triggerType, failRetryCount, executorShardingParam, executorParam, addressList);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
@@ -105,6 +109,7 @@ public class JobTriggerPoolHelper {
                     }
 
                     // incr timeout-count-map
+                    // 如果任务执行时间超过 500ms， 则把该任务标记为 慢任务缓存中
                     long cost = System.currentTimeMillis()-start;
                     if (cost > 500) {       // ob-timeout threshold 500ms
                         AtomicInteger timeoutCount = jobTimeoutCountMap.putIfAbsent(jobId, new AtomicInteger(1));
