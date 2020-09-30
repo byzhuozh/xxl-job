@@ -33,6 +33,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     public void afterSingletonsInstantiated() {
 
         // init JobHandler Repository (for method)
+        //初始化job 并缓存
         initJobHandlerMethodRepository(applicationContext);
 
         // refresh GlueFactory
