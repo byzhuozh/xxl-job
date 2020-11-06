@@ -109,6 +109,7 @@ public class TriggerCallbackThread {
             public void run() {
                 while(!toStop){
                     try {
+                        //回调日志写入失败，进行重试
                         retryFailCallbackFile();
                     } catch (Exception e) {
                         if (!toStop) {
@@ -164,9 +165,10 @@ public class TriggerCallbackThread {
         // callback, will retry if error
         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
             try {
-                //回调处理
+                //回调xxl-job server 处理
                 ReturnT<String> callbackResult = adminBiz.callback(callbackParamList);
-                //任务执行成功，则写入到回日志中
+
+                //任务执行成功，则写入到回调日志中
                 if (callbackResult!=null && ReturnT.SUCCESS_CODE == callbackResult.getCode()) {
                     callbackLog(callbackParamList, "<br>----------- xxl-job job callback finish.");
                     callbackRet = true;
@@ -180,7 +182,10 @@ public class TriggerCallbackThread {
                 callbackLog(callbackParamList, "<br>----------- xxl-job job callback error, errorMsg:" + e.getMessage());
             }
         }
+
+        //走到这里，说明回调日志写入都是失败的
         if (!callbackRet) {
+            //把回调参数写入日志文件中
             appendFailCallbackFile(callbackParamList);
         }
     }

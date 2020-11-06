@@ -201,8 +201,10 @@ public class JobThread extends Thread{
             }
         }
 
+		//走到这里，说明 toStop = true, 线程执行已经通知中断
 		// callback trigger request in queue
 		while(triggerQueue !=null && triggerQueue.size()>0){
+			//剩余未执行的任务，全部返回失败
 			TriggerParam triggerParam = triggerQueue.poll();
 			if (triggerParam!=null) {
 				// is killed
