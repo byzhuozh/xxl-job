@@ -206,7 +206,6 @@ public class JobThread extends Thread{
                     if (!toStop) {
                         // commonm
 						// 将执行结果发放到回调队列中
-                        TriggerCallbackThread.pushCallBack(new HandleCallbackParam(triggerParam.getLogId(), triggerParam.getLogDateTime(), executeResult));
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
                         		triggerParam.getLogId(),
 								triggerParam.getLogDateTime(),
