@@ -1,6 +1,5 @@
 package com.xxl.job.core.executor.impl;
 
-import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.executor.XxlJobExecutor;
 import com.xxl.job.core.glue.GlueFactory;
 import com.xxl.job.core.handler.annotation.XxlJob;
@@ -32,8 +31,11 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     @Override
     public void afterSingletonsInstantiated() {
 
+        // init JobHandler Repository
+        /*initJobHandlerRepository(applicationContext);*/
+
         // init JobHandler Repository (for method)
-        //初始化job 并缓存
+        // 初始化job 并缓存
         initJobHandlerMethodRepository(applicationContext);
 
         // refresh GlueFactory
@@ -53,6 +55,29 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     public void destroy() {
         super.destroy();
     }
+
+
+    /*private void initJobHandlerRepository(ApplicationContext applicationContext) {
+        if (applicationContext == null) {
+            return;
+        }
+
+        // init job handler action
+        Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
+
+        if (serviceBeanMap != null && serviceBeanMap.size() > 0) {
+            for (Object serviceBean : serviceBeanMap.values()) {
+                if (serviceBean instanceof IJobHandler) {
+                    String name = serviceBean.getClass().getAnnotation(JobHandler.class).value();
+                    IJobHandler handler = (IJobHandler) serviceBean;
+                    if (loadJobHandler(name) != null) {
+                        throw new RuntimeException("xxl-job jobhandler[" + name + "] naming conflicts.");
+                    }
+                    registJobHandler(name, handler);
+                }
+            }
+        }
+    }*/
 
     private void initJobHandlerMethodRepository(ApplicationContext applicationContext) {
         if (applicationContext == null) {
@@ -83,7 +108,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
             }
 
             for (Map.Entry<Method, XxlJob> methodXxlJobEntry : annotatedMethods.entrySet()) {
-                Method method = methodXxlJobEntry.getKey();
+                Method executeMethod = methodXxlJobEntry.getKey();
                 XxlJob xxlJob = methodXxlJobEntry.getValue();
                 if (xxlJob == null) {
                     continue;
@@ -91,7 +116,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
 
                 String name = xxlJob.value();
                 if (name.trim().length() == 0) {
-                    throw new RuntimeException("xxl-job method-jobhandler name invalid, for[" + bean.getClass() + "#" + method.getName() + "] .");
+                    throw new RuntimeException("xxl-job method-jobhandler name invalid, for[" + bean.getClass() + "#" + executeMethod.getName() + "] .");
                 }
 
                 //检验是否出现方法重名 @XxlJob 的value 不能重名
@@ -101,15 +126,16 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
 
                 // execute method
                 // 规定所有 job-handler 方法参数都是 String, 有且只有一个参数
-                if (!(method.getParameterTypes().length == 1 && method.getParameterTypes()[0].isAssignableFrom(String.class))) {
+                /*if (!(method.getParameterTypes().length == 1 && method.getParameterTypes()[0].isAssignableFrom(String.class))) {
                     throw new RuntimeException("xxl-job method-jobhandler param-classtype invalid, for[" + bean.getClass() + "#" + method.getName() + "] , " +
                             "The correct method format like \" public ReturnT<String> execute(String param) \" .");
                 }
                 if (!method.getReturnType().isAssignableFrom(ReturnT.class)) {
                     throw new RuntimeException("xxl-job method-jobhandler return-classtype invalid, for[" + bean.getClass() + "#" + method.getName() + "] , " +
                             "The correct method format like \" public ReturnT<String> execute(String param) \" .");
-                }
-                method.setAccessible(true);
+                }*/
+
+                executeMethod.setAccessible(true);
 
                 // init and destory
                 Method initMethod = null;
@@ -120,7 +146,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                         initMethod = bean.getClass().getDeclaredMethod(xxlJob.init());
                         initMethod.setAccessible(true);
                     } catch (NoSuchMethodException e) {
-                        throw new RuntimeException("xxl-job method-jobhandler initMethod invalid, for[" + bean.getClass() + "#" + method.getName() + "] .");
+                        throw new RuntimeException("xxl-job method-jobhandler initMethod invalid, for[" + bean.getClass() + "#" + executeMethod.getName() + "] .");
                     }
                 }
 
@@ -129,13 +155,13 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                         destroyMethod = bean.getClass().getDeclaredMethod(xxlJob.destroy());
                         destroyMethod.setAccessible(true);
                     } catch (NoSuchMethodException e) {
-                        throw new RuntimeException("xxl-job method-jobhandler destroyMethod invalid, for[" + bean.getClass() + "#" + method.getName() + "] .");
+                        throw new RuntimeException("xxl-job method-jobhandler destroyMethod invalid, for[" + bean.getClass() + "#" + executeMethod.getName() + "] .");
                     }
                 }
 
                 // registry jobhandler
                 // 注册 job-handler
-                registJobHandler(name, new MethodJobHandler(bean, method, initMethod, destroyMethod));
+                registJobHandler(name, new MethodJobHandler(bean, executeMethod, initMethod, destroyMethod));
             }
         }
 

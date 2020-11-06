@@ -29,27 +29,27 @@ public class ExecutorBizClient implements ExecutorBiz {
 
 
     @Override
-    public ReturnT beat() {
-        return XxlJobRemotingUtil.postBody(addressUrl+"beat", accessToken, timeout, null, String.class);
+    public ReturnT<String> beat() {
+        return XxlJobRemotingUtil.postBody(addressUrl+"beat", accessToken, timeout, "", String.class);
     }
 
     @Override
-    public ReturnT idleBeat(IdleBeatParam idleBeatParam){
+    public ReturnT<String> idleBeat(IdleBeatParam idleBeatParam){
         return XxlJobRemotingUtil.postBody(addressUrl+"idleBeat", accessToken, timeout, idleBeatParam, String.class);
     }
 
     @Override
-    public ReturnT run(TriggerParam triggerParam) {
+    public ReturnT<String> run(TriggerParam triggerParam) {
         return XxlJobRemotingUtil.postBody(addressUrl + "run", accessToken, timeout, triggerParam, String.class);
     }
 
     @Override
-    public ReturnT kill(KillParam killParam) {
+    public ReturnT<String> kill(KillParam killParam) {
         return XxlJobRemotingUtil.postBody(addressUrl + "kill", accessToken, timeout, killParam, String.class);
     }
 
     @Override
-    public ReturnT log(LogParam logParam) {
+    public ReturnT<LogResult> log(LogParam logParam) {
         return XxlJobRemotingUtil.postBody(addressUrl + "log", accessToken, timeout, logParam, LogResult.class);
     }
 
